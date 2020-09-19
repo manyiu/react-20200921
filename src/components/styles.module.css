@@ -1,0 +1,23 @@
+.container {
+    --gap: 30px;
+
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: var(--gap);
+    padding: var(--gap);
+    max-width: calc(100vh - 2 * var(--gap));
+    max-height: calc(100vw - 2 * var(--gap));
+
+    margin: auto;
+}
+
+.dot {
+    background-color: red;
+    border-radius: 50%;
+}
+
+.dot::before {
+    content: "";
+    display: block;
+    padding-bottom: 100%;
+  }
