@@ -1,47 +1,30 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import Dots from "./components/dots";
 import Loading from "./components/loading";
-import axios from "axios";
 
 import "./App.css";
+import useData from "./hooks/useData";
 
 const App = () => {
-  const dataRef = useRef([]);
+  const rawData = useData();
   const updateRef = useRef(true);
-  const [data, setData] = useState(dataRef.current);
+  const saveDataRef = useRef(rawData);
 
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      const { data: { data: dataFromAPI = [] } = {} } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/`
-      );
-      dataRef.current = dataFromAPI;
-      setData(dataFromAPI);
-    };
+  const displayData = () => {
+    if (updateRef.current) {
+      return rawData;
+    } else {
+      return saveDataRef.current;
+    }
+  };
 
-    const updateData = async () => {
-      const { data: { data: dataFromAPI = 0 } = {} } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/single`
-      );
+  const onClickHandler = () => {
+    saveDataRef.current = rawData;
+    updateRef.current = !updateRef.current;
+  };
 
-      dataRef.current = [...dataRef.current.slice(1), dataFromAPI];
-
-      if (updateRef.current) {
-        setData(dataRef.current);
-      }
-    };
-
-    fetchInitialData();
-
-    const intervalID = setInterval(updateData, 1000);
-
-    return () => clearInterval(intervalID);
-  }, []);
-
-  const onClickHandler = () => (updateRef.current = !updateRef.current);
-
-  return data.length > 0 ? (
-    <Dots data={data} onClick={onClickHandler} />
+  return displayData().length > 0 ? (
+    <Dots data={displayData()} onClick={onClickHandler} />
   ) : (
     <Loading />
   );
