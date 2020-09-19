@@ -10,21 +10,15 @@ const App = () => {
   const updateRef = useRef(true);
   const saveDataRef = useRef(rawData);
 
-  const displayData = () => {
-    if (updateRef.current) {
-      return rawData;
-    } else {
-      return saveDataRef.current;
-    }
-  };
+  const displayData = updateRef.current ? rawData : saveDataRef.current;
 
   const onClickHandler = () => {
     saveDataRef.current = rawData;
     updateRef.current = !updateRef.current;
   };
 
-  return displayData().length > 0 ? (
-    <Dots data={displayData()} onClick={onClickHandler} />
+  return displayData.length > 0 ? (
+    <Dots data={displayData} onClick={onClickHandler} />
   ) : (
     <Loading />
   );
