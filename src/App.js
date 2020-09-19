@@ -1,69 +1,50 @@
-import React, { Component } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Dots from "./components/dots";
 import Loading from "./components/loading";
 import axios from "axios";
 
 import "./App.css";
 
-class App extends Component {
-  constructor() {
-    super();
+const App = () => {
+  const dataRef = useRef([]);
+  const updateRef = useRef(true);
+  const [data, setData] = useState(dataRef.current);
 
-    this.state = {
-      update: true,
-      data: [],
-      error: false,
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      const { data: { data: dataFromAPI = [] } = {} } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/`
+      );
+      dataRef.current = dataFromAPI;
+      setData(dataFromAPI);
     };
-  }
 
-  async componentDidMount() {
-    const { data: { data = [] } = {} } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/`
-    );
+    const updateData = async () => {
+      const { data: { data: dataFromAPI = 0 } = {} } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/single`
+      );
 
-    this.setState({ data });
-  }
+      dataRef.current = [...dataRef.current.slice(1), dataFromAPI];
 
-  shouldComponentUpdate() {
-    if (!this.state.update) {
-      return false;
-    } else {
-      return true;
-    }
-  }
+      if (updateRef.current) {
+        setData(dataRef.current);
+      }
+    };
 
-  componentDidUpdate() {
-    clearInterval(this.setIntervalID);
-    this.setIntervalID = setInterval(() => this.fetchSingle(this.state), 1000);
-  }
+    fetchInitialData();
 
-  componentWillUnmount() {
-    clearInterval(this.setIntervalID);
-  }
+    const intervalID = setInterval(updateData, 1000);
 
-  static getDerivedStateFromError() {
-    return { error: true };
-  }
+    return () => clearInterval(intervalID);
+  }, []);
 
-  async fetchSingle(state) {
-    const { data: { data = 0 } = {} } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/single`
-    );
+  const onClickHandler = () => (updateRef.current = !updateRef.current);
 
-    this.setState({ data: [...state.data.slice(1), data] });
-  }
-
-  handleOnClick = () => {
-    this.setState({ update: !this.state.update });
-  };
-
-  render() {
-    if (this.state.error || this.state.data.length === 0) {
-      return <Loading />;
-    }
-
-    return <Dots data={this.state.data} onClick={this.handleOnClick} />;
-  }
-}
+  return data.length > 0 ? (
+    <Dots data={data} onClick={onClickHandler} />
+  ) : (
+    <Loading />
+  );
+};
 
 export default App;

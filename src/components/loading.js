@@ -1,37 +1,26 @@
-import React, { Component } from "react";
+import React, { Component, useEffect, useState } from "react";
 import Dots from "./dots";
 import initialData from "../data/initalLoading.json";
 
-class Loading extends Component {
-  constructor() {
-    super();
-    this.state = {
-      data: initialData,
+const Loading = () => {
+  const [data, setData] = useState(initialData);
+
+  useEffect(() => {
+    const updateData = () => {
+      const nextData = (data) => [
+        ...data.slice(1),
+        data[data.length - 1] + 1 <= 10 ? data[data.length - 1] + 1 : 0,
+      ];
+
+      setData((previousData) => nextData(previousData));
     };
-  }
 
-  componentDidMount() {
-    this.intervalID = setInterval(() => this.updateData(this.state), 100);
-  }
+    const intervalID = setInterval(updateData, 100);
 
-  componentWillUnmount() {
-    clearInterval(this.intervalID);
-  }
+    return () => clearInterval(intervalID);
+  }, []);
 
-  updateData = (state) => {
-    const nextData = [
-      ...state.data.slice(1),
-      state.data[state.data.length - 1] + 1 <= 10
-        ? state.data[state.data.length - 1] + 1
-        : 0,
-    ];
-
-    this.setState({ data: nextData });
-  };
-
-  render() {
-    return <Dots data={this.state.data} />;
-  }
-}
+  return <Dots data={data} />;
+};
 
 export default Loading;
