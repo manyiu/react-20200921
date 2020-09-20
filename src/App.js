@@ -1,24 +1,16 @@
-import React, { useRef } from "react";
+import React from "react";
 import Dots from "./components/dots";
 import Loading from "./components/loading";
 
 import "./App.css";
 import useData from "./hooks/useData";
+import usePause from "./hooks/usePause";
 
 const App = () => {
-  const rawData = useData();
-  const updateRef = useRef(true);
-  const saveDataRef = useRef(rawData);
+  const [data, setPause] = usePause(useData);
 
-  const displayData = updateRef.current ? rawData : saveDataRef.current;
-
-  const onClickHandler = () => {
-    saveDataRef.current = rawData;
-    updateRef.current = !updateRef.current;
-  };
-
-  return displayData.length > 0 ? (
-    <Dots data={displayData} onClick={onClickHandler} />
+  return data.length > 0 ? (
+    <Dots data={data} onClick={setPause} />
   ) : (
     <Loading />
   );
